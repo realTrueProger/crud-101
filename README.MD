@@ -1,7 +1,7 @@
 Python FastAPI CRUD
 
 ## Requirements
-- Python 3.12 (или >=3.10)
+- Python 3.12
 - FastAPI
 
 ## Запуск
