@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: pg
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # дубль на случай, если не подхватит env_file (редко, но бывает)
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"   # снаружи будет localhost:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # опционально: авто-инициализация скриптами .sql/.sh
+      # - ./db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
