@@ -27,7 +27,7 @@ users: list[User] = [
 
 last_id = 1
 
-@app.get("/")
+@app.get("/", summary="Ping")
 async def ping():
     return {"message": "ping ok"}
 
