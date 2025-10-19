@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import Base, engine, get_session
 from models import UserORM
+from schema import User
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,7 +35,7 @@ app = FastAPI(lifespan=lifespan)
 async def ping():
     return {"message": "ping ok"}
 
-@app.get("/users", summary="List users")
+@app.get("/users", response_model=list[User], summary="List users")
 async def list_users(db: AsyncSession = Depends(get_session)):
     result = await db.execute(select(UserORM))
     return result.scalars().all()

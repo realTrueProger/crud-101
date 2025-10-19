@@ -16,3 +16,4 @@ class UserUpdate(BaseModel):
 class User(UserBase):
     """Выходная модель"""
     id: int
+    model_config = {"from_attributes": True}
