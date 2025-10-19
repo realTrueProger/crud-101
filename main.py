@@ -2,31 +2,29 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import Base, engine, get_session
 from models import UserORM
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # выполняется при старте приложения
-    Base.metadata.create_all(bind=engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
-    with Session(engine) as db:
-        # проверим, есть ли уже юзеры
-        users_exist = db.scalar(select(UserORM).limit(1))
-        if not users_exist:
+    async with AsyncSession(bind=engine, expire_on_commit=False) as db:
+        exists = await db.scalar(select(UserORM.id).limit(1))
+
+        if exists is None:
             db.add_all([
                 UserORM(name="Vladimir", email="sollo@example.com"),
-                UserORM(name="Sergey", email="bac@example.com"),
+                UserORM(name="Sergey",  email="bac@example.com"),
             ])
-            db.commit()
+            await db.commit()
 
     yield
 
-    # выполняется при остановке приложения (если нужно что-то почистить)
-    # например: engine.dispose()
-    engine.dispose()
+    await engine.dispose()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -35,9 +33,14 @@ app = FastAPI(lifespan=lifespan)
 async def ping():
     return {"message": "ping ok"}
 
-@app.get("/users")
-def list_users(db: Session = Depends(get_session)):
-    return db.execute(select(UserORM)).scalars().all()
+@app.get("/users", summary="List users")
+async def list_users(db: AsyncSession = Depends(get_session)):
+    result = await db.execute(select(UserORM))
+    return result.scalars().all()
+
+
+
+
 #
 # @app.get("/users/{user_id}", response_model=User, summary="Get user by id")
 # def get_user(user_id: int):
