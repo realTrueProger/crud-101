@@ -1,12 +1,12 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db import Base, engine, get_session
-from models import UserORM
-from schema import User
+from app.config.db import Base, engine
+from app.controllers.user_controller import user_router
+from app.models.user import UserORM
 
 
 @asynccontextmanager
@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
         if exists is None:
             db.add_all([
                 UserORM(name="Vladimir", email="sollo@example.com"),
-                UserORM(name="Sergey",  email="bac@example.com"),
+                UserORM(name="Sergey", email="bac@example.com"),
             ])
             await db.commit()
 
@@ -28,20 +28,14 @@ async def lifespan(app: FastAPI):
 
     await engine.dispose()
 
+
 app = FastAPI(lifespan=lifespan)
+app.include_router(user_router)
 
 
 @app.get("/", summary="Ping")
 async def ping():
     return {"message": "ping ok"}
-
-@app.get("/users", response_model=list[User], summary="List users")
-async def list_users(db: AsyncSession = Depends(get_session)):
-    result = await db.execute(select(UserORM))
-    return result.scalars().all()
-
-
-
 
 #
 # @app.get("/users/{user_id}", response_model=User, summary="Get user by id")
