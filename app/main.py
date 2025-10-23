@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.db import Base, engine
-from app.controllers.user_controller import user_router
+from app.routers.user_router import user_router
 from app.models.user import UserORM
 
 
