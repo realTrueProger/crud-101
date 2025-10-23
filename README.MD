@@ -12,7 +12,7 @@ source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 docker compose up -d // запуск postgress
-fastapi dev main.py // запуск api
+fastapi dev app/main.py // запуск api
 ```
 
 
