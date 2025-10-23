@@ -13,7 +13,7 @@ class UserUpdate(BaseModel):
     name: str | None
     email: str | None
 
-class User(UserBase):
+class UserResponse(UserBase):
     """Выходная модель"""
     id: int
     model_config = {"from_attributes": True}
